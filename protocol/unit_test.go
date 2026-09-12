@@ -3,6 +3,7 @@ package protocol
 import (
 	"encoding/hex"
 	"math"
+	"strings"
 	"testing"
 )
 
@@ -53,6 +54,70 @@ func TestIsConvertibleBond(t *testing.T) {
 	for code, want := range szBonds {
 		if got := AddPrefix(code); got != want {
 			t.Errorf("AddPrefix(%q) = %q, want %q", code, got, want)
+		}
+	}
+}
+
+func TestFundClassification(t *testing.T) {
+	// 纯ETF
+	for _, code := range []string{"sh510300", "sh511010", "sh512000", "sh513050", "sh560010", "sh588000", "sz159919", "SZ159915"} {
+		full := AddPrefix(strings.ToLower(code[:2]) + code[2:])
+		if len(code) == 8 {
+			full = strings.ToLower(code)
+		}
+		if !IsFund(full) {
+			t.Errorf("IsFund(%q) = false, want true", full)
+		}
+		if !IsListedETF(full) {
+			t.Errorf("IsListedETF(%q) = false, want true", full)
+		}
+		if IsLOF(full) {
+			t.Errorf("IsLOF(%q) = true, want false", full)
+		}
+	}
+
+	// LOF
+	for _, code := range []string{"sz160105", "sz161725", "sh501050", "sh502010", "sh506000", "sh507300"} {
+		full := strings.ToLower(code)
+		if !IsFund(full) {
+			t.Errorf("IsFund(%q) = false, want true", full)
+		}
+		if !IsLOF(full) {
+			t.Errorf("IsLOF(%q) = false, want true", full)
+		}
+		if IsListedETF(full) {
+			t.Errorf("IsListedETF(%q) = true, want false", full)
+		}
+	}
+
+	// 传统封闭式(50x,非LOF): 是基金,但既非纯ETF也非LOF
+	if !IsFund("sh500001") {
+		t.Error(`IsFund("sh500001") = false, want true`)
+	}
+	if IsListedETF("sh500001") {
+		t.Error(`IsListedETF("sh500001") = true, want false`)
+	}
+	if IsLOF("sh500001") {
+		t.Error(`IsLOF("sh500001") = true, want false`)
+	}
+
+	// 非基金
+	for _, code := range []string{"sh600000", "sz000001", "sh000001", "sz399001", "sh880741"} {
+		if IsFund(code) {
+			t.Errorf("IsFund(%q) = true, want false", code)
+		}
+		if IsListedETF(code) {
+			t.Errorf("IsListedETF(%q) = true, want false", code)
+		}
+		if IsLOF(code) {
+			t.Errorf("IsLOF(%q) = true, want false", code)
+		}
+	}
+
+	// 历史别名 IsETF == IsFund
+	for _, code := range []string{"sh510300", "sz160105", "sh600000"} {
+		if IsETF(code) != IsFund(code) {
+			t.Errorf("IsETF(%q) != IsFund(%q)", code, code)
 		}
 	}
 }
@@ -168,10 +233,10 @@ func TestDecodeCode(t *testing.T) {
 		// 带点后缀
 		{"000001.SZ", ExchangeSZ, "000001"},
 		{"600000.SH", ExchangeSH, "600000"},
-		{"600000.sh", ExchangeSH, "600000"}, //小写后缀
-		{"399001.SZ", ExchangeSZ, "399001"}, //深成指
-		{"00700.HK", ExchangeHK, "00700"},   //港股
-		{"AAPL.US", ExchangeUS, "AAPL"},     //美股
+		{"600000.sh", ExchangeSH, "600000"},   //小写后缀
+		{"399001.SZ", ExchangeSZ, "399001"},   //深成指
+		{"00700.HK", ExchangeHK, "00700"},     //港股
+		{"AAPL.US", ExchangeUS, "AAPL"},       //美股
 		{"IF2609.CFF", ExchangeCFF, "IF2609"}, //期货
 
 		// 港股

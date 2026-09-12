@@ -73,6 +73,63 @@ func main() {
 
 ---
 
+## 🐍 Python 调用（pandas，对齐 mootdx）
+
+Go 协议实现通过本地 HTTP 服务暴露，Python 端返回 **pandas DataFrame**。
+
+```bash
+# 1. 启动 HTTP 服务（端口被占用时: TDX_HTTP_ADDR=:18080 go run ./example/HTTPServer）
+go run ./example/HTTPServer
+
+# 2. 安装并调用
+cd python && pip install -e .
+```
+
+```python
+from tdx_go import Quotes
+
+client = Quotes.factory()  # 默认 http://127.0.0.1:8080
+
+df = client.bars("sh510300", frequency=9, offset=100)  # 日K → DataFrame
+q  = client.quotes("sh510300", "sz159919")             # 实时五档
+client.etf_codes()   # 纯 ETF
+client.lof_codes()   # LOF
+client.fund_codes()  # 场内基金全部
+```
+
+详见 [`python/README.md`](python/README.md)。
+
+---
+
+## 📈 ETF / LOF 行情
+
+场内基金（ETF+LOF）与股票走同一套标准行情接口；分类谓词在 `protocol`：
+
+| 函数 | 含义 | 示例 |
+|------|------|------|
+| `IsFund` / `IsETF` | 场内基金（ETF+LOF+封闭式，历史语义） | `sh510300` `sz160105` |
+| `IsListedETF` | 纯 ETF（不含 LOF） | `sh510300` `sz159919` |
+| `IsLOF` | 上市开放式基金 | `sz160105` `sh501050` |
+
+```go
+c, _ := tdx.DialDefault()
+defer c.Close()
+
+// GetQuote 需要 DefaultCodes 做价格 Decimal 修正（ETF Decimal=4）
+tdx.DefaultCodes, _ = tdx.NewCodesSqlite(tdx.WithCodesClient(c))
+
+etfs, _ := c.GetListedETFCodeAll() // 纯 ETF
+lofs, _ := c.GetLOFCodeAll()       // LOF
+funds, _ := c.GetFundCodeAll()     // 场内基金全部
+
+quote, _ := c.GetQuote("sh510300", "sz160105")
+day, _ := c.GetKlineDay("sh510300", 0, 100)
+```
+
+> 演示: [`example/GetEtfLof`](example/GetEtfLof)。批量入库可用 `extend/pull`（市场 `cn/etf`）。
+
+---
+
 ## 📦 板块与板块指数代码(id)
 
 板块成分文件(`block_*.dat`)本身**不含板块指数代码(id)**，id 映射在 `tdxzs.cfg`(全称)，而成分文件用简称，二者经 `tdxbk.cfg`(简称↔全称) 桥接。`GetBlockDataWithIndex` 自动完成关联(命中率约 100%)。

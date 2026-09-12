@@ -27,6 +27,12 @@ type ICodes interface {
 	GetStockCodes(limit ...int) []string
 	GetETFs(limit ...int) CodeModels
 	GetETFCodes(limit ...int) []string
+	GetFunds(limit ...int) CodeModels
+	GetFundCodes(limit ...int) []string
+	GetListedETFs(limit ...int) CodeModels
+	GetListedETFCodes(limit ...int) []string
+	GetLOFs(limit ...int) CodeModels
+	GetLOFCodes(limit ...int) []string
 	GetIndexes(limit ...int) CodeModels
 	GetIndexCodes(limit ...int) []string
 }
@@ -391,7 +397,8 @@ func (this *CodesBase) GetStockCodes(limits ...int) []string {
 	return this.GetStocks(limits...).Codes()
 }
 
-// GetETFs 获取基金代码,sz159xxx,sh510xxx,sh511xxx
+// GetETFs 获取场内基金代码(含ETF+LOF),sz159xxx,sh510xxx,sz16xxxx,sh501xxx
+// 需要纯ETF或LOF时用 GetListedETFs / GetLOFs
 func (this *CodesBase) GetETFs(limits ...int) CodeModels {
 	limit := conv.Default(-1, limits...)
 	ls := []*CodeModel(nil)
@@ -407,12 +414,64 @@ func (this *CodesBase) GetETFs(limits ...int) CodeModels {
 	return ls
 }
 
-// GetETFCodes 获取基金代码,sz159xxx,sh510xxx,sh511xxx
+// GetETFCodes 获取场内基金代码(含ETF+LOF),sz159xxx,sh510xxx,sz16xxxx,sh501xxx
 func (this *CodesBase) GetETFCodes(limits ...int) []string {
 	return this.GetETFs(limits...).Codes()
 }
 
-// GetIndexes 获取基金代码,sz159xxx,sh510xxx,sh511xxx
+// GetFunds 获取场内基金代码,与 GetETFs 相同,语义更清晰
+func (this *CodesBase) GetFunds(limits ...int) CodeModels {
+	return this.GetETFs(limits...)
+}
+
+// GetFundCodes 获取场内基金代码,与 GetETFCodes 相同,语义更清晰
+func (this *CodesBase) GetFundCodes(limits ...int) []string {
+	return this.GetETFCodes(limits...)
+}
+
+// GetListedETFs 获取纯ETF代码(不含LOF),sh510xxx/sz159xxx
+func (this *CodesBase) GetListedETFs(limits ...int) CodeModels {
+	limit := conv.Default(-1, limits...)
+	ls := []*CodeModel(nil)
+	for _, m := range this.list {
+		code := m.FullCode()
+		if protocol.IsListedETF(code) {
+			ls = append(ls, m)
+		}
+		if limit > 0 && len(ls) >= limit {
+			break
+		}
+	}
+	return ls
+}
+
+// GetListedETFCodes 获取纯ETF代码(不含LOF),sh510xxx/sz159xxx
+func (this *CodesBase) GetListedETFCodes(limits ...int) []string {
+	return this.GetListedETFs(limits...).Codes()
+}
+
+// GetLOFs 获取LOF基金代码,sz16xxxx/sh501xxx
+func (this *CodesBase) GetLOFs(limits ...int) CodeModels {
+	limit := conv.Default(-1, limits...)
+	ls := []*CodeModel(nil)
+	for _, m := range this.list {
+		code := m.FullCode()
+		if protocol.IsLOF(code) {
+			ls = append(ls, m)
+		}
+		if limit > 0 && len(ls) >= limit {
+			break
+		}
+	}
+	return ls
+}
+
+// GetLOFCodes 获取LOF基金代码,sz16xxxx/sh501xxx
+func (this *CodesBase) GetLOFCodes(limits ...int) []string {
+	return this.GetLOFs(limits...).Codes()
+}
+
+// GetIndexes 获取指数代码,sz399001,sh000001
 func (this *CodesBase) GetIndexes(limits ...int) CodeModels {
 	limit := conv.Default(-1, limits...)
 	ls := []*CodeModel(nil)

@@ -336,7 +336,7 @@ func (this *Client) GetStockCodeAll() ([]string, error) {
 	return ls, nil
 }
 
-// GetETFCodeAll 获取所有ETF代码,带前缀例sz159399
+// GetETFCodeAll 获取所有场内基金代码(含ETF+LOF),带前缀例sz159399/sz160105
 func (this *Client) GetETFCodeAll() ([]string, error) {
 	ls := []string(nil)
 	for _, ex := range []protocol.Exchange{protocol.ExchangeSH, protocol.ExchangeSZ} {
@@ -346,6 +346,45 @@ func (this *Client) GetETFCodeAll() ([]string, error) {
 		}
 		for _, v := range resp.List {
 			if protocol.IsETF(ex.String() + v.Code) {
+				ls = append(ls, ex.String()+v.Code)
+			}
+		}
+	}
+	return ls, nil
+}
+
+// GetFundCodeAll 获取所有场内基金代码,与 GetETFCodeAll 相同
+func (this *Client) GetFundCodeAll() ([]string, error) {
+	return this.GetETFCodeAll()
+}
+
+// GetListedETFCodeAll 获取所有纯ETF代码(不含LOF),带前缀例sh510300/sz159919
+func (this *Client) GetListedETFCodeAll() ([]string, error) {
+	ls := []string(nil)
+	for _, ex := range []protocol.Exchange{protocol.ExchangeSH, protocol.ExchangeSZ} {
+		resp, err := this.GetCodeAll(ex)
+		if err != nil {
+			return nil, err
+		}
+		for _, v := range resp.List {
+			if protocol.IsListedETF(ex.String() + v.Code) {
+				ls = append(ls, ex.String()+v.Code)
+			}
+		}
+	}
+	return ls, nil
+}
+
+// GetLOFCodeAll 获取所有LOF基金代码,带前缀例sz160105/sh501050
+func (this *Client) GetLOFCodeAll() ([]string, error) {
+	ls := []string(nil)
+	for _, ex := range []protocol.Exchange{protocol.ExchangeSH, protocol.ExchangeSZ} {
+		resp, err := this.GetCodeAll(ex)
+		if err != nil {
+			return nil, err
+		}
+		for _, v := range resp.List {
+			if protocol.IsLOF(ex.String() + v.Code) {
 				ls = append(ls, ex.String()+v.Code)
 			}
 		}

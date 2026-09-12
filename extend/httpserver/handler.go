@@ -112,6 +112,48 @@ func (s *Server) handleETFCodeAll(w http.ResponseWriter, r *http.Request) {
 	respondOK(w, resp)
 }
 
+func (s *Server) handleFundCodeAll(w http.ResponseWriter, r *http.Request) {
+	var resp []string
+	var err error
+	err = s.pool.Do(func(c *tdx.Client) error {
+		resp, err = c.GetFundCodeAll()
+		return err
+	})
+	if err != nil {
+		respondErr(w, http.StatusOK, err.Error())
+		return
+	}
+	respondOK(w, resp)
+}
+
+func (s *Server) handleListedETFCodeAll(w http.ResponseWriter, r *http.Request) {
+	var resp []string
+	var err error
+	err = s.pool.Do(func(c *tdx.Client) error {
+		resp, err = c.GetListedETFCodeAll()
+		return err
+	})
+	if err != nil {
+		respondErr(w, http.StatusOK, err.Error())
+		return
+	}
+	respondOK(w, resp)
+}
+
+func (s *Server) handleLOFCodeAll(w http.ResponseWriter, r *http.Request) {
+	var resp []string
+	var err error
+	err = s.pool.Do(func(c *tdx.Client) error {
+		resp, err = c.GetLOFCodeAll()
+		return err
+	})
+	if err != nil {
+		respondErr(w, http.StatusOK, err.Error())
+		return
+	}
+	respondOK(w, resp)
+}
+
 func (s *Server) handleIndexCodeAll(w http.ResponseWriter, r *http.Request) {
 	var resp []string
 	var err error

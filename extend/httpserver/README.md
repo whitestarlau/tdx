@@ -94,7 +94,10 @@ func main() {
 | `GET /code` | `exchange`, `start` | 获取指定交易所的证券代码(分页) |
 | `GET /code/all` | `exchange` | 获取指定交易所的全部证券代码 |
 | `GET /code/stocks` | 无 | 获取全部股票代码 |
-| `GET /code/etfs` | 无 | 获取全部 ETF 代码 |
+| `GET /code/etfs` | 无 | 获取全部场内基金代码(ETF+LOF,历史命名) |
+| `GET /code/funds` | 无 | 获取全部场内基金代码(与 etfs 相同) |
+| `GET /code/listed-etfs` | 无 | 获取纯 ETF 代码(不含 LOF) |
+| `GET /code/lofs` | 无 | 获取 LOF 代码 |
 | `GET /code/indexes` | 无 | 获取全部指数代码 |
 
 ### 行情/财务

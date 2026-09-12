@@ -140,6 +140,9 @@ func (s *Server) registerRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /code/all", s.handleCodeAll)
 	mux.HandleFunc("GET /code/stocks", s.handleStockCodeAll)
 	mux.HandleFunc("GET /code/etfs", s.handleETFCodeAll)
+	mux.HandleFunc("GET /code/funds", s.handleFundCodeAll)
+	mux.HandleFunc("GET /code/listed-etfs", s.handleListedETFCodeAll)
+	mux.HandleFunc("GET /code/lofs", s.handleLOFCodeAll)
 	mux.HandleFunc("GET /code/indexes", s.handleIndexCodeAll)
 
 	// 行情/财务

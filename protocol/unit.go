@@ -391,7 +391,14 @@ func isBJStock(code string) bool {
 	return code[:2] == "92"
 }
 
-// IsETF 是否是基金,示例sz159558
+// IsFund 是否是场内基金(ETF+LOF+传统封闭式等),示例sh510300/sz159919/sz160105/sh501050
+// 与 IsETF 同义(历史命名),语义更准确时用 IsFund
+func IsFund(code string) bool {
+	return IsETF(code)
+}
+
+// IsETF 是否是场内基金(含ETF与LOF,历史语义),示例sz159558
+// 需要区分纯ETF/LOF时用 IsListedETF / IsLOF
 func IsETF(code string) bool {
 	if len(code) != 8 {
 		return false
@@ -401,6 +408,36 @@ func IsETF(code string) bool {
 	case code[0:2] == ExchangeSH.String() && isSHETF(code[2:]):
 		return true
 	case code[0:2] == ExchangeSZ.String() && isSZETF(code[2:]):
+		return true
+	}
+	return false
+}
+
+// IsListedETF 是否是交易型开放式指数基金(不含LOF),示例sh510300/sz159919
+func IsListedETF(code string) bool {
+	if len(code) != 8 {
+		return false
+	}
+	code = strings.ToLower(code)
+	switch {
+	case code[0:2] == ExchangeSH.String() && isSHListedETF(code[2:]):
+		return true
+	case code[0:2] == ExchangeSZ.String() && isSZListedETF(code[2:]):
+		return true
+	}
+	return false
+}
+
+// IsLOF 是否是上市开放式基金(LOF),示例sz160105/sh501050
+func IsLOF(code string) bool {
+	if len(code) != 8 {
+		return false
+	}
+	code = strings.ToLower(code)
+	switch {
+	case code[0:2] == ExchangeSH.String() && isSHLOF(code[2:]):
+		return true
+	case code[0:2] == ExchangeSZ.String() && isSZLOF(code[2:]):
 		return true
 	}
 	return false
@@ -423,6 +460,46 @@ func isSZETF(code string) bool {
 		return false
 	}
 	return code[:2] == "15" || code[:2] == "16"
+}
+
+// isSHListedETF 沪市纯ETF: 51x/52x/53x/56x/58x(不含50x封闭式/LOF)
+func isSHListedETF(code string) bool {
+	if len(code) != 6 {
+		return false
+	}
+	switch code[:2] {
+	case "51", "52", "53", "56", "58":
+		return true
+	}
+	return false
+}
+
+// isSZListedETF 深市ETF: 159xxx
+func isSZListedETF(code string) bool {
+	if len(code) != 6 {
+		return false
+	}
+	return code[:3] == "159"
+}
+
+// isSHLOF 沪市LOF: 501/502/506/507
+func isSHLOF(code string) bool {
+	if len(code) != 6 {
+		return false
+	}
+	switch code[:3] {
+	case "501", "502", "506", "507":
+		return true
+	}
+	return false
+}
+
+// isSZLOF 深市LOF: 16xxxx
+func isSZLOF(code string) bool {
+	if len(code) != 6 {
+		return false
+	}
+	return code[:2] == "16"
 }
 
 func isBJETF(code string) bool {
