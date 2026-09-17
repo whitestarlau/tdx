@@ -89,6 +89,14 @@ class Quotes:
         data = self._get(f"/index/{path}", code=symbol, start=start, count=offset)
         return klines_to_df(data)
 
+    def index_all(self, symbol: str, frequency: int = 9) -> pd.DataFrame:
+        """指数全量 K 线（对应 /index/{path}/all）。"""
+        if frequency not in FREQUENCY_MAP:
+            raise ValueError(f"指数不支持 frequency={frequency}")
+        path, _ = FREQUENCY_MAP[frequency]
+        data = self._get(f"/index/{path}/all", code=symbol)
+        return klines_to_df(data)
+
     # ---- 实时行情 ----
 
     def quotes(self, *symbols: str | Iterable[str]) -> pd.DataFrame:

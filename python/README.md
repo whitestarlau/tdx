@@ -56,6 +56,7 @@ funds = client.fund_codes() # 场内基金（ETF+LOF+封闭式）
 | `bars_all(symbol, frequency=9)` | 全量K线 | 同上 |
 | `quotes(*symbols)` | 实时五档 | DataFrame：price/bid1-5/ask1-5 等 |
 | `index(symbol, frequency, offset)` | 指数K线 | 同 bars |
+| `index_all(symbol, frequency)` | 指数全量K线 | 同 bars_all |
 | `etf_codes()` | 纯 ETF 代码 | Series |
 | `lof_codes()` | LOF 代码 | Series |
 | `fund_codes()` | 场内基金全部 | Series |
